@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from database import init_db, add_expense, get_expenses
 from ai_model import categorize_expense
 
@@ -54,6 +55,13 @@ def expense_tracker():
         df = df.dropna(subset=["Date"])
         daily_totals = df.groupby("Date")["Amount"].sum()
         st.line_chart(daily_totals)
+
+        st.subheader("🍕 Category Distribution (Pie Chart)")
+        category_totals = df.groupby("Category")["Amount"].sum()
+        fig, ax = plt.subplots()
+        ax.pie(category_totals, labels=category_totals.index, autopct='%1.1f%%', startangle=90)
+        ax.axis("equal")
+        st.pyplot(fig)
 
 # --- App Flow ---
 if "logged_in" not in st.session_state:
