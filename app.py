@@ -3,7 +3,7 @@ from database import init_db, add_expense, get_expenses
 from ai_model import categorize_expense
 import pandas as pd
 
-# --- Hardcoded credentials ---
+# --- Hardcoded credentials (secure with Streamlit Secrets in production) ---
 VALID_USERNAME = "saptak001"
 VALID_PASSWORD = "exptracker001"
 
@@ -38,15 +38,21 @@ def expense_tracker():
             add_expense(date.strftime("%Y-%m-%d"), amount, description, category)
             st.success(f"Added {description} under {category}")
 
-    # Show table
+    # Fetch and display data
     expenses = get_expenses()
     df = pd.DataFrame(expenses, columns=["ID", "Date", "Amount", "Description", "Category"])
     st.dataframe(df)
 
-    # Show summary
     if not df.empty:
-        st.subheader("📊 Expense Summary")
+        # 📊 Expense by Category
+        st.subheader("📊 Expense Summary by Category")
         st.bar_chart(df.groupby("Category")["Amount"].sum())
+
+        # 📈 Expense Over Time
+        st.subheader("📈 Expense Trend Over Time")
+        df["Date"] = pd.to_datetime(df["Date"])
+        daily_totals = df.groupby("Date")["Amount"].sum().reset_index()
+        st.line_chart(daily_totals.set_index("Date"))
 
 # --- App flow ---
 if "logged_in" not in st.session_state:
